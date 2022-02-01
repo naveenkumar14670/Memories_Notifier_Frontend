@@ -7,7 +7,10 @@ import { useUpcomingStyles } from './Styles';
 import cake from '../images/cake.jpg';
 import empty from '../images/empty.png';
 
+import ClimbingBoxLoader from "react-spinners/ClimbingBoxLoader";
+
 function Upcoming() {
+    const [loading, setLoading] = useState(false);
     const [cards, setCards] = useState([]);
     const classes = useUpcomingStyles();
 
@@ -21,6 +24,7 @@ function Upcoming() {
     };
 
     const fetchCards = async () => {
+        setLoading(true);
         const response = await axios.get(`${process.env.REACT_APP_PROXY}/card/getAll/user/${localStorage.getItem('userEmail')}`, {
             headers: {
                 'auth': localStorage.getItem('userToken')
@@ -51,6 +55,9 @@ function Upcoming() {
             cardsData.push(temp[i]);
         }
         setCards(cardsData);
+        setTimeout(() => {
+            setLoading(false);
+        }, 1000);
     };
 
     const getDate = (dob) => {
@@ -86,33 +93,39 @@ function Upcoming() {
         <>
             <div className={classes.upcomingContainer}>
                 {
-                    (cards.length === 0) ? (
-                        <>
-                            <img className={classes.emptyLogo} src={empty} alt='Empty' />
-                            <h1 style={{ color: 'red' }}>Empty</h1>
-                        </>
+                    (loading === true) ? (
+                        <span style={{ height: '50vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                            <ClimbingBoxLoader color='#3f51b5' loading={loading} size={20} />
+                        </span>
                     ) : (
-                        cards.map((card, index) => {
-                            return (
-                                <>
-                                    {
-                                        isNewMonth(index) && (<span key={index} className={classes.upcomingMonth}>{getMonthName(card.dob)}</span>)
-                                    }
-                                    <Paper key={card._id} className={classes.upcomingCardContainer}>
-                                        <img className={classes.upcomingCardImage} src={card.imageUrl === '' ? cake : `${process.env.REACT_APP_PROXY}/public/uploads/${card.imageUrl}`} alt='user' />
-                                        <h2 className={classes.upcomingCardName}>{card.name}</h2>
-                                        <div className={classes.upcomingCardTags}>
-                                            <span className={classes.upcomingCardGroupName} style={{ backgroundColor: 'green' }}>
-                                                {card.groupName}
-                                            </span>
-                                            <span className={classes.upcomingCardGroupName} style={{ backgroundColor: 'crimson' }} >
-                                                {getDate(card.dob)}
-                                            </span>
-                                        </div>
-                                    </Paper>
-                                </>
-                            )
-                        })
+                        (cards.length === 0) ? (
+                            <>
+                                <img className={classes.emptyLogo} src={empty} alt='Empty' />
+                                <h1 style={{ color: 'red' }}>Empty</h1>
+                            </>
+                        ) : (
+                            cards.map((card, index) => {
+                                return (
+                                    <>
+                                        {
+                                            isNewMonth(index) && (<span key={index} className={classes.upcomingMonth}>{getMonthName(card.dob)}</span>)
+                                        }
+                                        <Paper key={card._id} className={classes.upcomingCardContainer}>
+                                            <img className={classes.upcomingCardImage} src={card.imageUrl === '' ? cake : `${process.env.REACT_APP_PROXY}/public/uploads/${card.imageUrl}`} alt='user' />
+                                            <h2 className={classes.upcomingCardName}>{card.name}</h2>
+                                            <div className={classes.upcomingCardTags}>
+                                                <span className={classes.upcomingCardGroupName} style={{ backgroundColor: 'green' }}>
+                                                    {card.groupName}
+                                                </span>
+                                                <span className={classes.upcomingCardGroupName} style={{ backgroundColor: 'crimson' }} >
+                                                    {getDate(card.dob)}
+                                                </span>
+                                            </div>
+                                        </Paper>
+                                    </>
+                                )
+                            })
+                        )
                     )
                 }
             </div>

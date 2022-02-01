@@ -12,17 +12,20 @@ import EditIcon from '@material-ui/icons/Edit';
 import DeleteIcon from '@material-ui/icons/Delete';
 import DoneIcon from '@material-ui/icons/Done';
 
+import PropagateLoader from "react-spinners/PropagateLoader";
 
 function Home() {
     const classes = useHomeStyles();
 
     const defaultEditingGroup = { _id: '', name: '' };
 
+    const [loading, setLoading] = useState(false);
     const [groups, setGroups] = useState([]);
     const [inputGroupName, setInputGroupName] = useState('');
     const [editingGroup, setEditingGroup] = useState(defaultEditingGroup);
 
     const fetchGroups = async () => {
+        setLoading(true);
         const uid = localStorage.getItem('userId');
         const response = await axios.get(`${process.env.REACT_APP_PROXY}/memoryGroup/getAll/${uid}`, {
             headers: {
@@ -30,6 +33,9 @@ function Home() {
             }
         });
         setGroups(response.data);
+        setTimeout(() => {
+            setLoading(false);
+        }, 1000);
     }
 
     const createGroup = async () => {
@@ -96,62 +102,68 @@ function Home() {
                 </Button>
             </div>
             {
-                (groups.length === 0) ? (
-                    <div className={classes.emptyLogoContainer}>
-                        <img className={classes.emptyLogo} src={empty} alt='Empty' />
-                        <h1 style={{ color: 'red' }}>Empty</h1>
-                    </div>
+                (loading === true) ? (
+                    <span style={{ height: '50vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                        <PropagateLoader color='#3f51b5' loading={loading} size={15} />
+                    </span>
                 ) : (
-                    <Paper elevation={3} className={classes.groupsContainer}>
-                        <Grid container alignItems='center' spacing={2}>
-                            {
-                                groups.map((group) => {
-                                    return (
-                                        <Grid key={group._id} item xs={12} sm={4} md={3}>
-                                            <div className={classes.groupContainer}>
-                                                <Link to={`/memory/${group._id}`}>
-                                                    <img src={folder} alt="folder" className={classes.groupLogo} />
-                                                </Link>
-                                                {
-                                                    editingGroup._id === group._id ?
-                                                        (
-                                                            <TextField
-                                                                className={classes.editGroupInput}
-                                                                onChange={(e) => setEditingGroup({ ...editingGroup, name: e.target.value })}
-                                                                focused
-                                                                id="groupEditInput"
-                                                                label="Edit Name"
-                                                                value={editingGroup.name}
-                                                                InputProps={{
-                                                                    endAdornment: (
-                                                                        <InputAdornment position="end">
-                                                                            <IconButton onClick={updateGroup}>
-                                                                                <DoneIcon />
-                                                                            </IconButton>
-                                                                        </InputAdornment>
-                                                                    ),
-                                                                }}
-                                                            />
-                                                        ) :
-                                                        (
-                                                            <h2 className={classes.groupName}>{group.name}</h2>
-                                                        )
-                                                }
-                                                <Paper elevation={2} className={classes.groupModifyIconsContainer}>
-                                                    <IconButton onClick={() => setEditingGroup(group)}>
-                                                        <EditIcon className={classes.groupModifyIcon} />
-                                                    </IconButton>
-                                                    <IconButton onClick={() => deleteGroup(group._id)}>
-                                                        <DeleteIcon className={classes.groupModifyIcon} />
-                                                    </IconButton>
-                                                </Paper>
-                                            </div>
-                                        </Grid>
-                                    )
-                                })
-                            }
-                        </Grid>
-                    </Paper>
+                    (groups.length === 0) ? (
+                        <div className={classes.emptyLogoContainer}>
+                            <img className={classes.emptyLogo} src={empty} alt='Empty' />
+                            <h1 style={{ color: 'red' }}>Empty</h1>
+                        </div>
+                    ) : (
+                        <Paper elevation={3} className={classes.groupsContainer}>
+                            <Grid container alignItems='center' spacing={2}>
+                                {
+                                    groups.map((group) => {
+                                        return (
+                                            <Grid key={group._id} item xs={12} sm={4} md={3}>
+                                                <div className={classes.groupContainer}>
+                                                    <Link to={`/memory/${group._id}`}>
+                                                        <img src={folder} alt="folder" className={classes.groupLogo} />
+                                                    </Link>
+                                                    {
+                                                        editingGroup._id === group._id ?
+                                                            (
+                                                                <TextField
+                                                                    className={classes.editGroupInput}
+                                                                    onChange={(e) => setEditingGroup({ ...editingGroup, name: e.target.value })}
+                                                                    focused
+                                                                    id="groupEditInput"
+                                                                    label="Edit Name"
+                                                                    value={editingGroup.name}
+                                                                    InputProps={{
+                                                                        endAdornment: (
+                                                                            <InputAdornment position="end">
+                                                                                <IconButton onClick={updateGroup}>
+                                                                                    <DoneIcon />
+                                                                                </IconButton>
+                                                                            </InputAdornment>
+                                                                        ),
+                                                                    }}
+                                                                />
+                                                            ) :
+                                                            (
+                                                                <h2 className={classes.groupName}>{group.name}</h2>
+                                                            )
+                                                    }
+                                                    <Paper elevation={2} className={classes.groupModifyIconsContainer}>
+                                                        <IconButton onClick={() => setEditingGroup(group)}>
+                                                            <EditIcon className={classes.groupModifyIcon} />
+                                                        </IconButton>
+                                                        <IconButton onClick={() => deleteGroup(group._id)}>
+                                                            <DeleteIcon className={classes.groupModifyIcon} />
+                                                        </IconButton>
+                                                    </Paper>
+                                                </div>
+                                            </Grid>
+                                        )
+                                    })
+                                }
+                            </Grid>
+                        </Paper>
+                    )
                 )
             }
         </>

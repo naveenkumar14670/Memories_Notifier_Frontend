@@ -10,15 +10,19 @@ import SearchIcon from '@material-ui/icons/Search';
 import NewCardModel from './NewCardModel';
 import CardsContainer from './CardsContainer';
 
+import PropagateLoader from "react-spinners/PropagateLoader";
+
 function SingleGroup() {
     const { groupId } = useParams();
     const classes = useSingleGroupStyles();
 
+    const [loading, setLoading] = useState(false);
     const [cards, setCards] = useState([]);
     const [filteredCards, setFilteredCards] = useState([]);
     const [groupName, setGroupName] = useState('');
 
     const fetchCards = async () => {
+        setLoading(true);
         const response = await axios.get(`${process.env.REACT_APP_PROXY}/card/getAll/${groupId}`, {
             headers: {
                 'auth': localStorage.getItem('userToken')
@@ -26,6 +30,9 @@ function SingleGroup() {
         });
         setCards(response.data);
         setFilteredCards(response.data);
+        setTimeout(() => {
+            setLoading(false);
+        }, 1000);
     };
 
     const deleteCard = async (cardId) => {
@@ -77,7 +84,15 @@ function SingleGroup() {
                     </div>
                 </div>
                 <NewCardModel groupId={groupId} fetchCards={fetchCards} />
-                <CardsContainer cards={filteredCards} deleteCard={deleteCard} />
+                {
+                    (loading === true) ? (
+                        <span style={{ height: '50vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                            <PropagateLoader color='#3f51b5' loading={loading} size={15} />
+                        </span>
+                    ) : (
+                        <CardsContainer cards={filteredCards} deleteCard={deleteCard} />
+                    )
+                }
             </div>
         </>
     );
